@@ -1,0 +1,285 @@
+---
+title: "Atividade Flor de Iris"
+author: "Luciana Sousa Martins"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+# Distribuiçao Normal Multivariada
+
+*A distribuição normal multivariada, também conhecida como distribuição gaussiana multivariada, é uma generalização da distribuição normal univariada para múltiplas variáveis aleatórias correlacionadas entre si. Em vez de lidar com uma única variável aleatória, como na distribuição normal univariada, a distribuição normal multivariada descreve conjuntamente múltiplas variáveis aleatórias que estão distribuídas normalmente.*
+
+```{r}
+# limpar todas as variáveis
+
+rm(list = ls(all.names = TRUE))
+```
+
+```{r}
+# biblioteca
+
+library(ellipse)
+library(MASS)
+library(xtable)
+library(corrplot)
+library(knitr)
+library(stats)
+
+```
+
+```{r}
+file.save <-"C:/Users/Luciana/OneDrive/Documentos/MetodosEstatistiscos"
+```
+
+## Elipsoide de confiança
+
+-   *O código a baixo é usado para gerar uma amostra de uma distribuição normal bivariada com médias e matriz de covariância especificadas, e depois plotar um gráfico de dispersão desses dados juntamente com uma elipse de confiança de 95%.*
+
+-   *Observamos que o centro do elipsoide de confiança está localizado em um ponto próximo aos valores médios. Isso sugere que as estimativas pontuais das médias estão bem representadas pelos dados.*
+
+-   *A forma do elipsoide indica a relação de covariância entre as variáveis 1 e 2. O elipsoide está alongado em uma direção específica, isso pode indicar uma correlação positiva entre as varoáveis nessa direção.*
+
+-   *Os tamanhos dos eixos do elipsoide representam a incerteza associada às estimativas das variáveis observadas. Os eixos não indicam muita variabilidade e, portanto, menor incerteza nas estimativas.*
+
+-   *A elipse de confiança de 95% mostra a região dentro da qual temos 95% de confiança de que a verdadeira média das variáveis 1 e 2 estão contidas.*
+
+```{r}
+# Dados simulados
+n<-1000 # tamanho da amostra
+
+# vetor de médias
+mu <- c(10,5)
+
+# matriz de covariâncias
+rho<-0.9
+var1<-100
+var2<-25
+Sigma<- rbind(cbind(var1,sqrt(var1*var2)*rho),cbind(sqrt(var1*var2)*rho,var2))
+
+# gerando uma amostra
+mx <- mvrnorm(n, mu, Sigma)
+par(mfrow=c(1,1))
+plot(mx[,1],mx[,2],xlab="variável 1", ylab="variável 2")
+
+# estimativas de média, correlação e variâncias
+ma <- apply(mx,2,mean)
+rhoa <- cor(mx)[1,2]
+vara1<-cov(mx)[1,1]
+vara2<-cov(mx)[2,2]
+
+# elipse com parâmetros estimados
+lines(ellipse(rhoa, scale = c(sqrt(vara1), sqrt(vara2)),
+              centre = rbind(ma[1], ma[2]), level = 0.95))
+```
+
+## Matriz de Dispersão
+
+-   *A matriz de dispersão mostra possíveis relações positivas entre as variáveis: (LP, CP), (CP,LP), (CS,CP), (CP,CS), (CS, LP), (LP,CS)*
+
+```{r}
+# Dados da Íris de Fisher
+iris<-as.matrix(iris[,1:4])
+
+inames <- c("CS","LS","CP","LP")
+colnames(iris)<-inames
+par(mfrow=c(1,1))
+pairs(iris,pch=19,cex.labels=1.4)
+
+```
+
+## Matriz de Correlação
+
+-   *O código abaixo gera uma matriz e gráfico de correlação das variáveis.*
+
+*CS (Comprimento da Sépala):*
+
+-   *Tem uma correlação positiva forte com o Comprimento da Pétala (CP) (0.8718) e com a Largura da Pétala (LP) (0.8179, o que indica que, em geral, quanto maior o comprimento da sépala, maior tende a ser o comprimento da pétala.*
+-   *Tem uma correlação negativa fraca com a Largura da Sépala (LS) (-0.1176), o que indica uma relação leve de diminuição, mas não muito forte.*
+
+*LS (Largura da Sépala):*
+
+-   *Tem uma correlação negativa moderada com o Comprimento da Pétala (CP) (-0.4284), o que sugere que, em geral, quando a largura da sépala aumenta, o comprimento da pétala tende a diminuir.*
+-   *Tem uma correlação negativa moderada com a Largura da Pétala (LP) (-0.3661), indicando uma relação semelhante à observada com o comprimento da pétala.*
+
+*CP (Comprimento da Pétala):*
+
+-   *Tem uma correlação positiva forte com o Comprimento da Sépala (CS) (0.8718) e com a Largura da Pétala (LP) (0.9629), como mencionado anteriormente.*
+-   *A correlação positiva forte entre CP e LP sugere que, em geral, quanto maior o comprimento da pétala, maior tende a ser a largura da pétala.*
+
+*LP (Largura da Pétala):*
+
+-   *Tem uma correlação positiva forte com o Comprimento da Sépala (CS) (0.8179) e com o Comprimento da Pétala (CP) (0.9629), como mencionado anteriormente.*
+-   *Assim como CP, a correlação positiva forte entre LP e CP sugere que, em geral, quanto maior a largura da pétala, maior tende a ser o comprimento da pétala.*
+
+```{r}
+# Matriz de correlações
+cor(iris)
+#xtable(cor(iris))
+rho <-cor(iris) #lowerTriangle((cor(iris)))
+xb <- apply(iris,2,mean)
+s2<-cov(iris)
+vara <-diag(s2)
+nvar <- 4
+```
+
+```{r}
+# Gráfico de correlações
+
+par(mfrow=c(1,1))
+corrplot(cor(iris), order = "hclust", tl.col='black', tl.cex=.75)
+```
+
+## Boxplot
+
+#### *Boxplot CS:*
+
+-   *Existe uma pequena dispersão nos dados, já que possui uma menor amplitude.*
+-   *Seu retangulo contém aproximadamente 50% dos valores do conjunto de dados,logo há uma possibilidade de sua distribuição ser simetrica*
+
+#### *Boxplot LS:*
+
+-   *Existe uma pequena dispersão nos dados, já que possui uma menor amplitude.*
+-   *Seu retangulo contém aproximadamente 50% dos valores do conjunto de dados,logo há uma possibilidade de sua distribuição ser simetrica.*
+-   *Contém outliers já que possui pontos fora das "linhas", ou seja, ultrapassando os valores máximos e minimos do boxplot.*
+
+#### *Boxplot CP:*
+
+-   *Existe uma grande dispersão nos dados, já que possui uma maior amplitude.*
+-   *Seu retangulo não contém aproximadamente 50% dos valores do conjunto de dados,logo não há uma possibilidade de sua distribuição ser simetrica*
+
+#### *Boxplot LP:*
+
+-   *Existe uma pequena dispersão nos dados, já que possui uma menor amplitude.*
+-   *Seu retangulo não contém aproximadamente 50% dos valores do conjunto de dados,logo não há uma possibilidade de sua distribuição ser simetrica*
+
+*Sendo assim, pode-se observar que cada variável apresenta um nível de distribuição diferente de cada uma.*
+
+```{r}
+# Boxplot
+ 
+par(mfrow=c(1,1))
+boxplot(iris,cex=1.2,cex.axis=1.2,cex.lab=1.2,names=inames)
+
+```
+
+## Teste de Kolmogorov-Smirnov
+
+-   *O código abaixo cálcula o p-valor usando o teste de Kolmogorov-Smirnov e em seguida plota histogramas para visualização da distribuição de frequência para cada variável*
+
+-   *Lembrando que o valor do p-valor alto (\> 0,05) sugere que os dados não fornecem evidências suficientes para rejeitar a hipótse nula de que ele seguem uma distribuição normal.*
+
+-   *E o valor do p-valor baixo (\< 0,05) sugere que os dados fornecem evidências suficientes para rejeitar a hipótse nula de que ele seguem uma distribuição normal.*
+
+-   *Diante dos testes a baixo de Kolmogorov-Smirnov feitos em cima de cada variável, é importante notar que para CP e LP, as evidências indicam que essas variáveis não seguem uma distribuição normal. Para CS e LS, os resultados não fornecem evidências conclusivas contra a normalidade.*
+
+-   *Os Histogramas também reforçam a afirmativa acima, em que os gráficos das variáveis CP e LP mostram uma distribuição bastante assimetrica em comparação as variáveis LS e CS.*
+
+```{r}
+par(mfrow=c(2,2))
+for (i in 1:4) {
+  ks_result <- ks.test(iris[,i], "pnorm", mean(iris[,i]), sd(iris[,i]))
+  cat("Variável:", inames[i], "\n")
+  cat("p-valor do teste de Kolmogorov-Smirnov:", ks_result$p.value, "\n\n")
+}
+```
+
+```{r}
+# Histogramas
+ 
+par(mfrow=c(2,2))
+hist(iris[,1],xlab=inames[1],cex=1.2,cex.axis=1.2,cex.lab=1.2,
+     main="",probability=TRUE,ylab="densidade")
+hist(iris[,2],xlab=inames[2],cex=1.2,cex.axis=1.2,cex.lab=1.2,
+     main="",probability=TRUE,ylab="densidade")
+hist(iris[,3],xlab=inames[3],cex=1.2,cex.axis=1.2,cex.lab=1.2,
+     main="",probability=TRUE,ylab="densidade")
+hist(iris[,4],xlab=inames[4],cex=1.2,cex.axis=1.2,cex.lab=1.2,
+     main="",probability=TRUE,ylab="densidade")
+```
+
+## Elipsóides de Confinaça
+
+-   *O código abaixo gera Elipsóides de confiança de 95% para cada correlação entre as variáveis do dataset.*
+
+-   *A forma das elipsoidse entre as variáveis (CP, CS), (LP, CS) e (LP, CP) estão alongadas em uma direção específica, isso pode indicar uma correlação positiva entre as variáveis nessa direção.*
+
+-   *A forma das elipsoidse entre as variáveis (LS, CS), (CP, LS) e (LP, LS) não estão alongadas em uma direção específica, isso pode indicar uma correlação negativa entre as variáveis.*
+
+-   *Os tamanhos dos eixos do elipsoide representam a incerteza associada às estimativas das variáveis observadas. Os eixos não indicam muita variabilidade e, portanto, menor incerteza nas estimativas.*
+
+```{r}
+# Elipsóides de Confiança
+
+par(mfrow=c(2,3))
+for (i in 1:(nvar-1)){
+  for (j in (i+1):nvar){
+    plot(ellipse(rho[i,j], scale = c(sqrt(vara[i]), sqrt(vara[j])),
+                 centre = rbind(xb[i], xb[j]), level = 0.95),type="l",lwd=2,col=2,
+         xlab=inames[i],ylab=inames[j])
+    lines(iris[,i],iris[,j],pch=19,cex=1.2,cex.lab=1.2,cex.axis=1.2,type="p",col=4)
+  }
+}
+```
+
+## Gráfico Q-Q Plot
+
+*O código a baixo cria um gráfico Q-Q PLot para cada variável, cada gráfico compara os quantis observados dos dados com os quantis teóricos de uma distribuição normal. Além disso, também foi cálculado o coeficiente de correlação Pearson entre os quantis teóricos e observados, esse coeficiente fornece uma medida da semelhança entre os dois conjuntos de quantis, onde valores proximos de 1 indicam uma boa concordância.*
+
+-   *Coeficiente de Correlação de Pearson para CS : 0.9891878*
+
+-   *Coeficiente de Correlação de Pearson para LS : 0.9925113*
+
+-   *Coeficiente de Correlação de Pearson para CP : 0.9378633*
+
+-   *Coeficiente de Correlação de Pearson para LP : 0.9517107*
+
+*Esses valores positivos próximos a 1 indicam que há uma forte correlação positiva entre as variáveis. Em outras palavras, à medida que uma variável aumenta, a outra também aumenta em uma proporção constante. Isso sugere que as variáveis estão bastante relacionadas linearmente entre si*
+
+*Diante dos gráficos, nota-se que os gráficos para as variáveis CS e LS existem uma pequena fuga de normaldade por assimetria. Enquanto os gráficos para CP e LP, mostra uma fuga de normalidade por assimetria mas com uma maior quantidade já que ficam mais dispersos no plano.*
+
+```{r}
+# Gráfico Q-Q Plot
+
+par(mfrow=c(2,2))
+for (i in 1:4){
+  qqnorm(iris[,i], main = paste('Q-Q Plot para', inames[i]), xlab = 'Quantis teóricos', ylab = 'Quantis observados')
+  qqline(iris[,i], col = 2)
+  
+  qq_corr <- cor(qqnorm(iris[,i], plot.it = FALSE)$x, qqnorm(iris[,i], plot.it = FALSE)$y)
+  cat('Coeficiente de Correlação de Pearson para', inames[i], ":", qq_corr, '\n\n')
+  
+}
+```
+
+## Gráfico Q-Q Plot para forma quadrática
+
+*Neste caso, os quantis observados dos dados são comparados com os quantis teóricos de uma distribuição quadrática. O objetivo é verificar se os quantis observados dos dados se alinham com os quantis teóricos da distribuição quadrática*
+
+-   *Coeficiente de Correlação de Pearson para CS : 0.9804007*
+
+-   *Coeficiente de Correlação de Pearson para LS : 0.9801651*
+
+-   *Coeficiente de Correlação de Pearson para CP : 0.9556939*
+
+-   *Coeficiente de Correlação de Pearson para LP : 0.9481196*
+
+*Esses valores positivos próximos a 1 indicam que há uma forte correlação positiva entre as variáveis. Em outras palavras, à medida que uma variável aumenta, a outra também aumenta em uma proporção constante. Isso sugere que as variáveis estão bastante relacionadas linearmente entre si*
+
+*Diante dos gráficos, nota-se que os gráficos para as variáveis CS e LS em comparação com os gráficos anteriores, estão mais ajustados a linha diagonal de referência. Enquanto os gráficos para CP e LP, mostra uma melhora na dispersão dos pontos dentro do plano, se ajustando mais a linha diagonal de referência.*
+
+```{r}
+# Gráfico Q-Q Plot para forma quadrática
+
+par(mfrow=c(2,2))
+for (i in 1:4){
+  dados_quadraticos <- iris[,i]^2
+  qqnorm(dados_quadraticos, main = paste('Q-Q Plot para', inames[i]), xlab = 'Quantis teóricos', ylab = 'Quantis observados')
+  qqline(dados_quadraticos, col = 2)
+  
+  qq_corr <- cor(qqnorm(dados_quadraticos, plot.it = FALSE)$x, qqnorm(dados_quadraticos, plot.it = FALSE)$y)
+  cat('Coeficiente de Correlação de Pearson para', inames[i], ":", qq_corr, '\n\n')
+  
+}
+```
